@@ -7,8 +7,14 @@ namespace ProducerConsumerWithTPL
 {
     class Program
     {
+		// BlockingCollection creates a list of type ConcurrentBag with max size of ten positions
+        // If a producer try to add one more item It will wait until some consumer grab a value and 
+        // release a position
 		static BlockingCollection<int> messages = new BlockingCollection<int>(new ConcurrentBag<int>(), 10);
-        static CancellationTokenSource cts = new CancellationTokenSource();
+        
+        // Necessary token to stop thread execution properly
+		static CancellationTokenSource cts = new CancellationTokenSource();
+
         static Random random = new Random();
 
         static void Main(string[] args)
