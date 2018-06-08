@@ -8,11 +8,11 @@ namespace ProducerConsumerWithTPL
     class Program
     {
 		// BlockingCollection creates a list of type ConcurrentBag with max size of ten positions
-        // If a producer try to add one more item It will wait until some consumer grab a value and 
-        // release a position
-		static BlockingCollection<int> messages = new BlockingCollection<int>(new ConcurrentBag<int>(), 10);
+        // If a producer try to add one more item It will wait until some consumer grab a value and release a position
+		static BlockingCollection<int> messages = 
+			new BlockingCollection<int>(new ConcurrentBag<int>(), 10);
         
-        // Necessary token to stop thread execution properly
+        // Necessary object to stop thread execution properly when requested
 		static CancellationTokenSource cts = new CancellationTokenSource();
 
         static Random random = new Random();
@@ -34,6 +34,7 @@ namespace ProducerConsumerWithTPL
             {
                 Task.WaitAll(new[] { producer1, producer2, consumer }, cts.Token);
             }
+            // Exception handling with multithreading. If an error occurs a AggregateException is raised
             catch (AggregateException ae)
             {
 				ae.Handle(e => 
@@ -52,8 +53,11 @@ namespace ProducerConsumerWithTPL
         {
             while (true)
             {
+				// Command sent to thread which are running this method -> stop here
                 cts.Token.ThrowIfCancellationRequested();
                 int i = random.Next(100);
+
+                //Adding value to buffer
                 messages.Add(i);
                 Console.WriteLine($"Producing {i} from {Task.CurrentId}");
                 Thread.Sleep(random.Next(100));
@@ -62,6 +66,7 @@ namespace ProducerConsumerWithTPL
 
         static void RunConsumer()
         {
+			// The method 'GetConsumingEnumerable()' gets a value from buffer
             foreach (var item in messages.GetConsumingEnumerable())
             {
                 cts.Token.ThrowIfCancellationRequested();
